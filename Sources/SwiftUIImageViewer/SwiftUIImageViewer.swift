@@ -10,6 +10,9 @@ public struct SwiftUIImageViewer: View {
     @State private var offset: CGPoint = .zero
     @State private var lastTranslation: CGSize = .zero
 
+    private let defaultScale: CGFloat = 1
+    private let zoomedScale: CGFloat = 2
+
     public init(image: Image) {
         self.image = image
     }
@@ -24,10 +27,26 @@ public struct SwiftUIImageViewer: View {
                     .offset(x: offset.x, y: offset.y)
                     .gesture(makeDragGesture(size: proxy.size))
                     .gesture(makeMagnificationGesture(size: proxy.size))
+                    .gesture(makeDoubleTapGesture(size: proxy.size))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .edgesIgnoringSafeArea(.all)
         }
+    }
+    
+    private func makeDoubleTapGesture(size: CGSize) -> some Gesture {
+        TapGesture(count: 2)
+            .onEnded {
+                withAnimation {
+                    if scale != defaultScale {
+                        scale = defaultScale
+                        offset = .zero
+                    } else {
+                        scale = zoomedScale
+                        adjustMaxOffset(size: size)
+                    }
+                }
+            }
     }
 
     private func makeMagnificationGesture(size: CGSize) -> some Gesture {
